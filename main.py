@@ -18,6 +18,8 @@ class CommentRequest(BaseModel):
     url: str
     accounts: list[str] = ["akun1"]
     mood: str = "positive"
+    context: str = ""
+    per_account_comment: bool = True
 
 @app.post("/comment")
 async def api_comment(req: CommentRequest):
@@ -29,10 +31,12 @@ async def api_comment(req: CommentRequest):
             print(f"[*] Memulai proses untuk {req.accounts}...", flush=True)
             # PENTING: preview=False biar gak nanya input()
             result = tiktok_comment.run_auto_comment(
-                req.url, 
-                req.accounts, 
-                req.mood, 
-                preview=False  # <--- INI KUNCINYA
+                req.url,
+                req.accounts,
+                req.mood,
+                context=req.context,
+                per_account_comment=req.per_account_comment,
+                preview=False,  # <--- INI KUNCINYA
             )
             print(f"[*] Selesai: {result}", flush=True)
         except Exception as e:
