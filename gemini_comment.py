@@ -90,12 +90,17 @@ def init_gemini():
         print(f"🤖 Provider: Gemini ({GEMINI_MODEL})")
     return client
 
-def generate_comment(context: str, mood: str = "positive", client=None, count: int = 1) -> list[str]:
+def generate_comment(context: str, mood: str = "positive", client=None, count: int = 1, custom_prompt: str = "") -> list[str]:
     if mood not in PROMPT_TEMPLATES:
         raise ValueError(f"Mood '{mood}' tidak valid. Pilihan: {list(PROMPT_TEMPLATES.keys())}")
     if client is None: client = init_gemini()
 
     prompt = PROMPT_TEMPLATES[mood].format(context=context)
+    if custom_prompt.strip():
+        prompt += (
+            "\nArahan tambahan dari pengguna (WAJIB DIIKUTI):\n"
+            f"{custom_prompt.strip()}\n"
+        )
     comments = []
     for i in range(count):
         try:

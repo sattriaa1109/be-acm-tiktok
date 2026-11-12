@@ -271,6 +271,7 @@ def run_auto_comment(
     context: str = "",
     per_account_comment: bool = True,
     preview: bool = True,
+    custom_prompt: str = "",
 ) -> dict:
     """
     Jalankan auto comment untuk banyak akun.
@@ -283,6 +284,7 @@ def run_auto_comment(
         per_account_comment : True = generate komentar unik per akun,
                               False = semua akun pakai komentar yang sama
         preview             : True = tampilkan preview dan minta konfirmasi
+        custom_prompt       : Arahan tambahan dari user untuk gaya/isi komentar
 
     Returns:
         dict berisi summary hasil
@@ -312,7 +314,11 @@ def run_auto_comment(
         print(f"⏳ Generating {len(accounts)} komentar unik (mood: {mood})...")
         try:
             comments_list = generate_comment(
-                context, mood=mood, client=gemini_client, count=len(accounts)
+                context,
+                mood=mood,
+                client=gemini_client,
+                count=len(accounts),
+                custom_prompt=custom_prompt,
             )
         except RuntimeError as e:
             print(f"\n❌ {e}")
@@ -323,7 +329,7 @@ def run_auto_comment(
         while len(comments_list) < len(accounts) and retry < 3:
             retry += 1
             try:
-                extra = generate_comment(context, mood=mood, client=gemini_client, count=1)
+                extra = generate_comment(context, mood=mood, client=gemini_client, count=1, custom_prompt=custom_prompt)
                 comments_list.extend(extra)
             except RuntimeError as e:
                 print(f"\n❌ {e}")
@@ -338,7 +344,7 @@ def run_auto_comment(
         # Satu komentar sama untuk semua
         print(f"⏳ Generating 1 komentar untuk semua akun (mood: {mood})...")
         try:
-            comments_list = generate_comment(context, mood=mood, client=gemini_client, count=1)
+            comments_list = generate_comment(context, mood=mood, client=gemini_client, count=1, custom_prompt=custom_prompt)
         except RuntimeError as e:
             print(f"\n❌ {e}")
             return {"success": False, "error": str(e)}
@@ -370,6 +376,7 @@ def run_auto_comment(
         "url": url,
         "mood": mood,
         "context": context,
+        "custom_prompt": custom_prompt,
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "results": {"success": 0, "failed": 0},
         "details": [],
@@ -527,6 +534,11 @@ def cli_mode():
     )
     parser.add_argument("--context", default="", help="Deskripsi singkat video")
     parser.add_argument(
+        "--prompt",
+        default="",
+        help="Arahan tambahan untuk AI (contoh: komentar singkat, lucu, pakai emoji)",
+    )
+    parser.add_argument(
         "--same-comment",
         action="store_true",
         help="Pakai komentar yang sama untuk semua akun",
@@ -545,6 +557,7 @@ def cli_mode():
         context=args.context,
         per_account_comment=not args.same_comment,
         preview=not args.no_preview,
+        custom_prompt=args.prompt,
     )
 
 

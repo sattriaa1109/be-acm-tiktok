@@ -20,6 +20,7 @@ class CommentRequest(BaseModel):
     mood: str = "positive"
     context: str = ""
     per_account_comment: bool = True
+    custom_prompt: str = ""
 
 @app.post("/comment")
 async def api_comment(req: CommentRequest):
@@ -36,6 +37,7 @@ async def api_comment(req: CommentRequest):
                 req.mood,
                 context=req.context,
                 per_account_comment=req.per_account_comment,
+                custom_prompt=req.custom_prompt,
                 preview=False,  # <--- INI KUNCINYA
             )
             print(f"[*] Selesai: {result}", flush=True)
